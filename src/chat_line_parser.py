@@ -1,5 +1,6 @@
 import re
 from datetime import datetime
+import src.regex_file as rf
 
 
 class ChatLineParser:
@@ -8,15 +9,12 @@ class ChatLineParser:
         self.types = set()
 
     def get_type(self, msg_line):
-        msg_line = re.sub(r'(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2})\s(AM|PM)\s\-\s', '', msg_line)
-        if re.search(r"(You\swere\sadded|You're\snow\san\sadmin|Messages\sto\sthis\sgroup\sare\snow\ssecured\swith"
-                     r"\send-to-end\sencryption.\sTap\sfor\smore\sinfo.|Messages\sto\sthis\schat\sand\scalls\sare"
-                     r"\snow\ssecured\swith\send-to-end\sencryption.\sTap\sfor\smore\sinfo.|(.*)\s(left|changed"
-                     r"\stheir|changed\sto)(.*))", msg_line):
+        msg_line = re.sub(rf.date_regex, '', msg_line)
+        if re.search(rf.system_msg_regex, msg_line):
             msg_type = 'system'
-        elif re.search(r"(.*)\s(added|removed|created\sgroup|changed\sthe\ssubject)\s", msg_line):
+        elif re.search(rf.admin_msg_regex, msg_line):
             msg_type = 'admin'
-        elif re.search(r"([^:]*):\s(.*)", msg_line):
+        elif re.search(rf.user_msg_regex, msg_line):
             msg_type = 'user'
         else:
             msg_type = 'other'
@@ -24,31 +22,31 @@ class ChatLineParser:
         return msg_type
 
     def get_sender(self, msg_line):
-        msg_line = re.sub(r'(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2})\s(AM|PM)\s\-\s', '', msg_line)
+        msg_line = re.sub(rf.date_regex, '', msg_line)
         if self.get_type(msg_line) == 'system':
             return 'system'
         elif self.get_type(msg_line) == 'admin':
-            return re.findall(r"(.*)\s(added|removed|created\sgroup|changed\sthe\ssubject)\s", msg_line)[0][0]
+            return re.findall(rf.admin_msg_regex, msg_line)[0][0]
         elif self.get_type(msg_line) == 'user':
-            return re.findall(r"([^:]*):\s(.*)", msg_line)[0][0]
+            return re.findall(rf.user_msg_regex, msg_line)[0][0].replace('\u202a', '').replace('\u202c', '')
         else:
             return None
 
     def get_content(self, msg_line):
-        msg_line = re.sub(r'(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2})\s(AM|PM)\s\-\s', '', msg_line)
+        msg_line = re.sub(rf.date_regex, '', msg_line)
         if self.get_type(msg_line) == 'system':
             return msg_line
         elif self.get_type(msg_line) == 'admin':
-            content = re.findall(r"(.*)\s(added|removed|created\sgroup|changed\sthe\ssubject)\s(.*)", msg_line)[0][1:]
+            content = re.findall(rf.admin_msg_regex, msg_line)[0][1:]
             return ' '.join((' '.join(content)).split())
         elif self.get_type(msg_line) == 'user':
-            return re.findall(r"([^:]*):\s(.*)", msg_line)[0][1]
+            return re.findall(rf.user_msg_regex, msg_line)[0][1]
         else:
             return None
 
     @staticmethod
     def get_timestamp(msg_line):
-        timestamp = re.findall(r'(\d{1,2}\/\d{1,2}\/\d{2}),\s(\d{1,2}:\d{2})\s(AM|PM)', msg_line)[0]
+        timestamp = re.findall(rf.date_regex, msg_line)[0]
         day = timestamp[0].split('/')
         day = '/'.join(['0' + x if len(x) == 1 else x for x in day])
         hour = timestamp[1].strip().split(':')

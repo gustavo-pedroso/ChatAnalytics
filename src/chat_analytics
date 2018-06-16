@@ -1,12 +1,8 @@
 from src.chat import Chat
 
-
-chat = Chat('data/WhatsApp Chat with .txt')
+chat = Chat('data/WhatsApp Chat with CharladoresBaladinhas.txt')
 
 chat.get_messages()
-chat.message_counts()
-chat.word_counts()
-chat.average_response_time()
-chat.chat_restarts(1440, double_reply=False)
-chat.media_messages()
-chat.emoticon_counts()
+chat.get_stats()
+chat.print_stats()
+
