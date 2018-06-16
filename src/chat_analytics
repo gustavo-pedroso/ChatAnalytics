@@ -1,6 +1,6 @@
 from src.chat import Chat
 
-chat = Chat('data/WhatsApp Chat with CharladoresBaladinhas.txt')
+chat = Chat('data/WhatsApp Chat with .txt')
 
 chat.get_messages()
 chat.get_stats()

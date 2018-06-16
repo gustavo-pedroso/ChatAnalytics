@@ -24,7 +24,7 @@ class Chat:
                 self.msg_lines[last_valid] += self.msg_lines[i]
             else:
                 last_valid = i
-        self.msg_lines = [msg for msg in self.msg_lines if re.search(rf.date_regex, msg)]
+        self.msg_lines = [msg for msg in self.msg_lines if re.search(rf.date_regex, msg) and len(msg.split()) < 200]
 
     def get_messages(self):
         messages = []
